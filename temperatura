@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperatura en el horno</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #121212;
+            color: #ffffff;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: #00adb5;
+        }
+        .readings {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .reading {
+            font-size: 1.5rem;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temperatura en el horno</h1>
+        <div class="readings">
+            <div class="reading" id="temperature">Temperatura: -- °C</div>
+            <div class="reading" id="humidity">Humedad: -- %</div>
+        </div>
+        <canvas id="sensorChart"></canvas>
+        <div id="timestamp">Última actualización: --</div>
+    </div>
+
+    <script>
+        // Configuración inicial
+        const temperatureData = [];
+        const humidityData = [];
+        const labels = [];
+
+        // Configurar gráfico
+        const ctx = document.getElementById('sensorChart').getContext('2d');
+        const sensorChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Temperatura (°C)',
+                        data: temperatureData,
+                        borderColor: '#ff5722',
+                        backgroundColor: 'rgba(255, 87, 34, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                    },
+                    {
+                        label: 'Humedad (%)',
+                        data: humidityData,
+                        borderColor: '#00adb5',
+                        backgroundColor: 'rgba(0, 173, 181, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tiempo',
+                            color: '#ffffff'
+                        },
+                        ticks: { color: '#ffffff' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Lecturas',
+                            color: '#ffffff'
+                        },
+                        ticks: { color: '#ffffff' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#ffffff' }
+                    }
+                }
+            }
+        });
+
+        // Función para generar valores aleatorios
+        function getRandomInRange(min, max) {
+            return (Math.random() * (max - min) + min).toFixed(2);
+        }
+
+        function calculateHumidity(temperature) {
+            const maxHumidity = 1;  // Humedad máxima
+            const minHumidity = 4;   // Humedad mínima
+            const maxTemp = 50;      // Temperatura mínima
+            const minTemp = 55;      // Temperatura máxima
+
+            // Humedad proporcional a la temperatura
+            return ((maxHumidity - minHumidity) * (minTemp - temperature) / (minTemp - maxTemp) + minHumidity).toFixed(2);
+        }
+
+        // Actualizar lecturas y gráfico
+        function updateReadings() {
+            const temperature = getRandomInRange(45, 60); // Simula temperatura
+            const humidity = calculateHumidity(temperature); // Calcula la humedad
+            const timestamp = new Date().toLocaleTimeString();
+
+            // Actualizar lecturas en la página
+            document.getElementById('temperature').textContent = `Temperatura: ${temperature} °C`;
+            document.getElementById('humidity').textContent = `Humedad: ${humidity} %`;
+            document.getElementById('timestamp').textContent = `Última actualización: ${timestamp}`;
+
+            // Actualizar datos del gráfico
+            if (labels.length >= 20) {
+                labels.shift();
+                temperatureData.shift();
+                humidityData.shift();
+            }
+
+            labels.push(timestamp);
+            temperatureData.push(temperature);
+            humidityData.push(humidity);
+
+            sensorChart.update();
+        }
+
+        // Actualizar cada 2 segundos
+        setInterval(updateReadings, 2000);
+        updateReadings();
+    </script>
+</body>
+</html>
+
+
